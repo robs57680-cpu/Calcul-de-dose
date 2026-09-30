@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b6fb5">
+<title>Calcul de doses</title>
+<style>
+:root{--bg:#f2f8fd;--card:#fff;--ink:#12283d;--mut:#5a7186;--line:#cfdfec;--ac:#0b6fb5;--acs:#dcebf7;--ok:#15803d;--oks:#dcf5e3;--ko:#b91c1c;--kos:#fde4e4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1a29;--card:#132638;--ink:#e4eff9;--mut:#94aec6;--line:#294761;--ac:#5bb8f0;--acs:#1a3a55;--ok:#6ee79a;--oks:#173a27;--ko:#ff8f8f;--kos:#431a1a}}
+:root[data-theme="dark"]{--bg:#0b1a29;--card:#132638;--ink:#e4eff9;--mut:#94aec6;--line:#294761;--ac:#5bb8f0;--acs:#1a3a55;--ok:#6ee79a;--oks:#173a27;--ko:#ff8f8f;--kos:#431a1a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Nunito","Segoe UI",system-ui,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:4px 0 2px;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 18px}
+.seg{display:flex;gap:6px;background:var(--acs);padding:4px;border-radius:12px;margin-bottom:18px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:9px 4px;border-radius:9px;font:inherit;font-size:.9rem;cursor:pointer}
+.seg button.on{background:var(--ac);color:var(--bg);font-weight:700}
+.th{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;color:var(--ink);font:inherit;cursor:pointer}
+.th:hover,.th:focus-visible{border-color:var(--ac);outline:none}
+.th .ic{font-size:1.5rem;width:40px;height:40px;display:grid;place-items:center;background:var(--acs);border-radius:10px;flex:none}
+.th b{display:block}.th small{color:var(--mut)}
+.th .bs{margin-left:auto;color:var(--ac);font-weight:700;font-size:.85rem;white-space:nowrap}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--mut);font-size:.9rem;margin-bottom:8px}
+.bar{height:6px;background:var(--acs);border-radius:4px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:var(--ac);transition:width .3s}
+.q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;font-size:1.1rem;margin-bottom:14px}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+input{flex:1;min-width:0;font:inherit;font-size:1.3rem;padding:11px 12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+input:focus{outline:none;border-color:var(--ac)}
+.u{font-weight:700;color:var(--ac)}
+.btn{width:100%;border:0;background:var(--ac);color:var(--bg);font:inherit;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;margin-top:4px}
+.btn.g{background:var(--acs);color:var(--ink)}
+.fb{border-radius:12px;padding:14px;margin-bottom:12px}
+.fb.ok{background:var(--oks);color:var(--ok)}.fb.ko{background:var(--kos);color:var(--ko)}
+.fb ul{margin:8px 0 0;padding-left:20px;color:var(--ink)}
+.big{font-size:3rem;font-weight:800;text-align:center;margin:10px 0 0;color:var(--ac)}
+.er{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;font-size:.92rem}
+.er span{color:var(--mut)}
+.tl{background:none;border:0;color:var(--mut);font:inherit;cursor:pointer;padding:0}
+
+.ans{flex:1;min-height:54px;border:2px solid var(--ac);border-radius:10px;background:var(--card);font-size:1.5rem;padding:8px 12px;text-align:right;font-variant-numeric:tabular-nums}
+.pad,.ck{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.pad button,.ck button{font:inherit;font-size:1.3rem;padding:13px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;cursor:pointer}
+.ck{grid-template-columns:repeat(4,1fr);gap:6px;margin:0}.ck button{padding:10px 0;font-size:1.1rem}.ck .op{background:var(--acs)}
+#cb{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:52px;height:52px;border-radius:50%;border:0;background:var(--ac);color:var(--bg);font-size:1.5rem;cursor:pointer;z-index:10;box-shadow:0 2px 8px #0004}
+#cp{position:fixed;left:12px;right:12px;max-width:320px;margin-left:auto;bottom:calc(78px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;z-index:10;display:none;box-shadow:0 4px 16px #0004}
+#cp.on{display:block}
+#cd{text-align:right;font-size:1.4rem;min-height:42px;padding:6px 8px;background:var(--bg);border-radius:8px;margin-bottom:8px;overflow-x:auto;white-space:nowrap}
+.pts{display:flex;justify-content:space-between;align-items:center;background:var(--acs);border-radius:12px;padding:10px 14px;margin-bottom:14px;gap:8px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.mb{height:6px;background:var(--acs);border-radius:4px;margin-top:6px;overflow:hidden}.mb i{display:block;height:100%;background:var(--ac)}
+.rw{opacity:.45}.rw.on{opacity:1}
+h3{margin:18px 0 8px}
+#app{padding-bottom:100px}
+#up{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:12px;right:12px;max-width:536px;margin:0 auto;z-index:20;border:0;border-radius:12px;padding:12px;background:var(--ac);color:var(--bg);font:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0005}
+#up[hidden]{display:none}
+:root{--w1:#fbfdff;--w2:#d9e9f6;--fl:#c6d9e8;--d1:#fff;--d2:#8fbbdf;--d3:#e53935;--wn:#cfe8f7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--w1:#10273b;--w2:#091623;--fl:#0a1521;--d1:#17344d;--d2:#2a5a84;--d3:#9a3b3b;--wn:#1d3b52}}
+:root[data-theme="dark"]{--w1:#10273b;--w2:#091623;--fl:#0a1521;--d1:#17344d;--d2:#2a5a84;--d3:#9a3b3b;--wn:#1d3b52}
+body{background:linear-gradient(var(--w1),var(--w2)) fixed}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+#bg .fl{fill:var(--fl)}#bg .d1{fill:var(--d1)}#bg .d2{fill:var(--d2)}#bg .d3{fill:var(--d3)}#bg .wn{fill:var(--wn)}#bg .ln{stroke:var(--d2);fill:none;stroke-width:2}
+#hd{max-width:560px;margin:0 auto;padding:14px 16px 0}
+#app{padding-top:14px}
+.hc{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.av{flex:none;width:64px;height:64px;background:var(--acs);border-radius:50%;overflow:hidden}.av svg{display:block}
+.cn{flex:1;display:flex;flex-direction:column;gap:6px}
+.pt{display:flex;align-items:center;gap:10px;font-size:.95rem}.pt small{display:block;color:var(--mut);font-size:.78rem}
+.ev{margin-top:8px;font-weight:700;color:var(--ink)}
+.av{width:76px;height:76px}
+.lb{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:.82rem;font-weight:700;margin-bottom:2px}.lb small{font-weight:400;color:var(--mut);font-size:.72rem}
+.fg{display:flex;align-items:center;gap:2px;min-height:32px}
+.fgi,.fgi svg{display:block;width:30px;height:30px}
+.em,.mo{color:var(--mut);font-size:.78rem;padding:0 4px}
+.pop{animation:pp .5s ease-out}
+@keyframes pp{from{transform:scale(0) translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pop{animation:none}}
+</style>
+</head>
+<body>
+<button id="up" hidden>🔄 Nouvelle version disponible : mettre à jour</button>
+<svg id="bg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<rect class="fl" x="0" y="690" width="400" height="110"/><rect class="d2" x="0" y="684" width="400" height="8"/>
+<path class="ln" d="M0 740H400M100 690L60 800M200 690V800M300 690L340 800" opacity=".5"/>
+<rect class="d2" x="0" y="566" width="400" height="118" opacity=".22"/><rect class="d2" x="0" y="560" width="400" height="6" opacity=".6"/>
+<rect class="d1" x="272" y="90" width="100" height="120" rx="6"/><rect class="wn" x="280" y="98" width="84" height="104" rx="3"/><path class="ln" d="M322 98V202M280 150H364"/>
+<circle class="d1" cx="60" cy="110" r="26"/><circle class="ln" cx="60" cy="110" r="26"/><path class="ln" d="M60 110V92M60 110L74 118"/>
+<rect class="d1" x="30" y="190" width="56" height="56" rx="8"/><path class="d3" d="M52 203h12v12h12v12H64v12H52V227H40v-12h12z" transform="translate(-6 -2)"/>
+<rect class="d2" x="28" y="596" width="8" height="94" rx="3"/><rect class="d1" x="36" y="640" width="170" height="26" rx="8"/><rect class="d2" x="36" y="666" width="170" height="6"/><ellipse class="d2" cx="62" cy="634" rx="22" ry="9"/><rect class="d2" x="200" y="622" width="8" height="68" rx="3"/>
+<path class="ln" d="M330 560V690M310 690H350M330 560H350"/><rect class="d1" x="318" y="566" width="24" height="38" rx="9"/><rect class="wn" x="322" y="582" width="16" height="18" rx="5"/>
+</svg>
+<div id="hd"></div>
+<div id="app"></div>
+<button id="cb" aria-label="Calculatrice">🧮</button>
+<div id="cp"><div id="cd">0</div><div class="ck" id="ck"></div></div>
+<script>
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,P=a=>a[r(0,a.length-1)];
+const f=n=>(+(+n).toFixed(2)).toLocaleString('fr-FR');
+const G={};
+G.dose=L=>{let v,c,d,ans,steps,q;
+ if(L==1){const m=P([5,10,20,25,50]);v=P([2,5,10]);c=m*v;d=m*P([1,2,3,4]);ans=d/m;
+  q=`Flacon de ${c} mg dans ${v} mL. Prescription : ${d} mg. Quel volume prélever ?`;
+  steps=[`Concentration : ${c} mg ÷ ${v} mL = ${m} mg/mL`,`Volume : ${d} mg ÷ ${m} mg/mL = ${f(ans)} mL`]}
+ else if(L==2){v=P([2,4,5,10]);c=P([40,80,100,250,500]);d=P([30,60,75,120,150,200,300]);const m=c/v;ans=d/m;
+  q=`Ampoule de ${c} mg dans ${v} mL. Prescription : ${d} mg. Quel volume prélever ?`;
+  steps=[`Concentration : ${c} ÷ ${v} = ${f(m)} mg/mL`,`Volume : ${d} ÷ ${f(m)} = ${f(ans)} mL`]}
+ else if(r(0,1)){v=P([1,2,5]);const m=P([50,100,250]);c=m*v;const d=P([0.05,0.1,0.15,0.2,0.25,0.3]);ans=d*1000/m;
+  q=`Ampoule de ${c} µg dans ${v} mL. Prescription : ${String(d).replace('.',',')} mg. Quel volume prélever ?`;
+  steps=[`Conversion : ${f(d)} mg = ${f(d*1000)} µg`,`Concentration : ${c} ÷ ${v} = ${m} µg/mL`,`Volume : ${f(d*1000)} ÷ ${m} = ${f(ans)} mL`]}
+ else{v=P([5,10]);c=P([500,1000,2000]);const m=c/v;const d=P([0.5,0.75,1,1.5,2]);ans=d*1000/m;
+  q=`Flacon de ${c} mg dans ${v} mL. Prescription : ${String(d).replace('.',',')} g. Quel volume prélever ?`;
+  steps=[`Conversion : ${f(d)} g = ${f(d*1000)} mg`,`Concentration : ${c} ÷ ${v} = ${f(m)} mg/mL`,`Volume : ${f(d*1000)} ÷ ${f(m)} = ${f(ans)} mL`]}
+ return{q,ans,unit:'mL',dec:2,steps}};
+G.debit=L=>{let V,t,q,steps,tt;
+ if(L==1){V=P([250,500,1000]);t=P([2,4,5,10]);tt=t;q=`Perfusion de ${V} mL à passer en ${t} h.`}
+ else if(L==2){V=P([100,150,250,500,750,1000,1500]);t=P([3,6,8,12,24]);tt=t;q=`Perfusion de ${V} mL à passer en ${t} h.`}
+ else{V=P([100,250,500,750,1000]);const h=r(1,4),m=P([15,30,45]);tt=h+m/60;t=`${h} h ${m} min`;q=`Perfusion de ${V} mL à passer en ${t}.`}
+ const ans=V/tt;steps=L==3?[`Durée : ${t} = ${f(tt)} h`,`Débit : ${V} ÷ ${f(tt)} = ${f(ans)} mL/h`]:[`Débit : ${V} mL ÷ ${t} h = ${f(ans)} mL/h`];
+ return{q:q+' Quel débit en mL/h ?',ans,unit:'mL/h',dec:1,steps}};
+G.gouttes=L=>{let V,t,fc,ans,q,steps;
+ if(L==1){fc=20;V=P([250,500,1000]);t=P([2,4,5,6,8,10]);ans=V*fc/(t*60);
+  q=`Perfusion de ${V} mL en ${t} h, tubulure de ${fc} gouttes/mL. Quel débit en gouttes/min ?`;
+  steps=[`Gouttes totales : ${V} × ${fc} = ${V*fc}`,`Minutes : ${t} × 60 = ${t*60}`,`Débit : ${V*fc} ÷ ${t*60} = ${f(ans)} gouttes/min`]}
+ else if(L==2||r(0,1)){fc=P([15,20,60]);V=P([100,250,500,750,1000]);t=P([2,3,4,6,8,12]);ans=V*fc/(t*60);
+  q=`Perfusion de ${V} mL en ${t} h, tubulure de ${fc} gouttes/mL. Quel débit en gouttes/min ?`;
+  steps=[`Gouttes totales : ${V} × ${fc} = ${V*fc}`,`Minutes : ${t} × 60 = ${t*60}`,`Débit : ${V*fc} ÷ ${t*60} = ${f(ans)} gouttes/min`]}
+ else{fc=P([15,20,60]);const d=P([40,60,80,125,150,200]);ans=d*fc/60;
+  q=`Débit prescrit : ${d} mL/h, tubulure de ${fc} gouttes/mL. Quel débit en gouttes/min ?`;
+  steps=[`Gouttes par heure : ${d} × ${fc} = ${d*fc}`,`Par minute : ${d*fc} ÷ 60 = ${f(ans)} gouttes/min`]}
+ return{q,ans,unit:'gouttes/min',dec:0,steps}};
+G.pct=L=>{let q,ans,unit,dec=1,steps;
+ if(L==1){const p=P([1,2,5,10]),V=P([2,5,10,20]);ans=p*10*V;unit='mg';
+  q=`Combien de mg de produit actif dans ${V} mL d'une solution à ${p} % ?`;
+  steps=[`${p} % = ${p} g/100 mL = ${p*10} mg/mL`,`Quantité : ${p*10} × ${V} = ${ans} mg`]}
+ else if(L==2){const p=P([0.5,1,2]),m=p*10,d=m*P([0.5,1,1.5,2,2.5,3,4,5]);ans=d/m;unit='mL';
+  q=`Solution à ${String(p).replace('.',',')} %. Prescription : ${f(d)} mg. Quel volume injecter ?`;
+  steps=[`${f(p)} % = ${f(m)} mg/mL`,`Volume : ${f(d)} ÷ ${f(m)} = ${f(ans)} mL`]}
+ else if(r(0,1)){const V=P([50,100,250,500]),p=P([0.9,2.5,5,10,20]);const m=p*V/100;ans=p;unit='%';
+  q=`Poche de ${V} mL contenant ${f(m)} g de soluté. Quel est le pourcentage (g/100 mL) ?`;
+  steps=[`Pour 100 mL : ${f(m)} × 100 ÷ ${V} = ${f(ans)} g`,`Soit ${f(ans)} %`]}
+ else{const mm=P([5,10,20,40,25]);ans=mm/10;unit='%';
+  q=`Une solution contient ${mm} mg/mL. Quel est son pourcentage ?`;
+  steps=[`${mm} mg/mL = ${mm} g/L`,`1 % = 10 g/L, donc ${mm} ÷ 10 = ${f(ans)} %`]}
+ return{q,ans,unit,dec,steps}};
+G.poids=L=>{let q,ans,unit,steps;
+ if(L==1){const d=P([5,10,15,20]),p=P([50,60,70,80]);ans=d*p;unit='mg';
+  q=`Prescription : ${d} mg/kg. Patient de ${p} kg. Quelle dose totale ?`;steps=[`${d} × ${p} = ${ans} mg`]}
+ else if(L==2){const p=P([8,12,15,20,25]),d=P([30,40,50,60,100]),n=P([2,3,4]);ans=d*p/n;unit='mg';
+  q=`Enfant de ${p} kg, prescription ${d} mg/kg/jour en ${n} prises. Quelle dose par prise ?`;
+  steps=[`Dose par jour : ${d} × ${p} = ${d*p} mg`,`Par prise : ${d*p} ÷ ${n} = ${f(ans)} mg`]}
+ else{const p=P([10,12,15,20,25]),d=P([30,40,50,60]),n=P([2,3,4]),c=P([20,25,40,50]);ans=d*p/n/c;unit='mL';
+  q=`Enfant de ${p} kg, ${d} mg/kg/jour en ${n} prises. Sirop à ${c} mg/mL. Quel volume par prise ?`;
+  steps=[`Dose par jour : ${d} × ${p} = ${d*p} mg`,`Par prise : ${d*p} ÷ ${n} = ${f(d*p/n)} mg`,`Volume : ${f(d*p/n)} ÷ ${c} = ${f(ans)} mL`]}
+ return{q,ans,unit,dec:1,steps}};
+G.seringue=L=>{let q,ans,steps;
+ if(L==1){const c=P([1,2,5,10]),x=c*P([1,2,3,4,5]);ans=x/c;
+  q=`Seringue électrique à ${c} mg/mL. Prescription : ${x} mg/h. Quel débit en mL/h ?`;steps=[`${x} mg/h ÷ ${c} mg/mL = ${f(ans)} mL/h`]}
+ else if(L==2){const X=P([50,100,250,500]),c=X/50,x=P([2,5,8,10,15,20]);ans=x/c;
+  q=`Seringue de 50 mL contenant ${X} mg de produit. Prescription : ${x} mg/h. Quel débit en mL/h ?`;
+  steps=[`Concentration : ${X} ÷ 50 = ${f(c)} mg/mL`,`Débit : ${x} ÷ ${f(c)} = ${f(ans)} mL/h`]}
+ else{const w=P([60,70,80,90]),d=P([2,3,5,10]),X=P([250,500]),c=X*1000/50;ans=d*w*60/c;
+  q=`Patient de ${w} kg, prescription ${d} µg/kg/min. Seringue de 50 mL contenant ${X} mg. Quel débit en mL/h ?`;
+  steps=[`Concentration : ${X} mg = ${X*1000} µg dans 50 mL = ${c} µg/mL`,`Dose/min : ${d} × ${w} = ${d*w} µg/min, soit ${d*w*60} µg/h`,`Débit : ${d*w*60} ÷ ${c} = ${f(ans)} mL/h`]}
+ return{q,ans,unit:'mL/h',dec:1,steps}};
+const TH=[
+ {id:'dose',n:'Dose et volume à prélever',d:'mg, µg, g → mL',i:'💉'},
+ {id:'debit',n:'Débit en mL/h',d:'Volume et durée',i:'💧'},
+ {id:'gouttes',n:'Gouttes par minute',d:'Tubulures 15, 20 ou 60 gouttes/mL',i:'⏱️'},
+ {id:'pct',n:'Pourcentages',d:'% de produit actif, mg/mL',i:'🧪'},
+ {id:'poids',n:'Dose selon le poids',d:'mg/kg, pédiatrie, sirops',i:'⚖️'},
+ {id:'seringue',n:'Seringue électrique',d:'mg/h, µg/kg/min → mL/h',i:'🩺'},
+ {id:'mixte',n:'Série mixte',d:'Tous les thèmes mélangés',i:'🎲'}];
+const LV=['Niveau 1','Niveau 2','Niveau 3'],N=10;
+const gen=(id,L)=>{const k=id=='mixte'?P(Object.keys(G)):id,q=G[k](L);q.cat=k;return q};
+const HEAL_PTS=100,ERR_X=5;
+const today=()=>new Date().toLocaleDateString('sv');
+const REW=[[100,'🌱','Stagiaire motivée'],[300,'⭐','Rigueur en progrès'],[600,'🏅','Calculs fiables'],[1000,'🎖️','Experte des doses'],[2000,'🏆','Infirmière en or']];
+let S={lvl:1,th:null,qs:[],i:0,sc:0,st:'q',errs:[],gain:0,val:'',view:'home',mood:'ok'};
+let D={heal:0,dead:0,err:0,best:{},pts:0,earned:[],th:{},days:{},dr:[]};
+try{const x=JSON.parse(localStorage.getItem('dosecalc2')||'null');if(x)D=Object.assign(D,x);else D.best=JSON.parse(localStorage.getItem('dosecalc')||'{}')}catch(e){}
+D.heal=Math.max(D.heal,Math.floor(D.pts/HEAL_PTS));
+const save=()=>{try{localStorage.setItem('dosecalc2',JSON.stringify(D))}catch(e){}};
+const dv=()=>D.days[today()]||{n:0,ok:0,s:0};
+const day=()=>D.days[today()]||(D.days[today()]={n:0,ok:0,s:0});
+const pc=(a,b)=>b?Math.round(a/b*100)+' %':'–';
+const app=document.getElementById('app');
+const nurse=m=>`<svg viewBox="0 0 100 100" width="76" height="76"><path d="M14 100c0-22 14-32 36-32s36 10 36 32z" fill="#0b6fb5"/><path d="M43 56h14v13q-7 7-14 0z" fill="#ecbd96"/><path d="M36 69l14 18 14-18" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><path d="M35 72c-2 14 4 20 15 20s17-6 15-20" fill="none" stroke="#4b5b6e" stroke-width="2.4" stroke-linecap="round"/><circle cx="50" cy="92" r="3.4" fill="#9aa7b5" stroke="#4b5b6e" stroke-width="1.2"/><rect x="62" y="80" width="15" height="9" rx="2" fill="#fff"/><path d="M65 83.5h9M65 86h6" stroke="#0b6fb5" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="50" cy="38" rx="23" ry="25" fill="#6b3f2a"/><ellipse cx="50" cy="43" rx="17" ry="19" fill="#f7d2b0"/><path d="M33 42c1-8 6-12 17-12s16 4 17 12c-5-4-10-6-17-6s-12 2-17 6z" fill="#6b3f2a"/><path d="M29 29c0-10 8-16 21-16s21 6 21 16c0 4-5 6-21 6s-21-2-21-6z" fill="#fff" stroke="#c3d6e6" stroke-width="1.2"/><rect x="48.5" y="17" width="3" height="11" rx="1" fill="#e53935"/><rect x="44.5" y="21" width="11" height="3" rx="1" fill="#e53935"/><path d="M37.5 41q4-2.5 8 0M54.5 41q4-2.5 8 0" stroke="#4a2b1c" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="42" cy="47" rx="2.2" ry="2.8" fill="#2b2b3a"/><ellipse cx="58" cy="47" rx="2.2" ry="2.8" fill="#2b2b3a"/><circle cx="42.8" cy="46" r=".8" fill="#fff"/><circle cx="58.8" cy="46" r=".8" fill="#fff"/><circle cx="36" cy="53" r="3.2" fill="#f29b9b" opacity=".5"/><circle cx="64" cy="53" r="3.2" fill="#f29b9b" opacity=".5"/><path d="${m=='bad'?'M44 59q6-5 12 0':'M44 55q6 6 12 0'}" stroke="#c2565a" stroke-width="1.8" fill="none" stroke-linecap="round"/>${m=='bad'?'<path d="M72 36q3.5 5 0 8q-3.5-3 0-8z" fill="#7cc4f2"/>':''}</svg>`;
+const PS=['#f7d3b5','#e8b48a','#c68a5e','#8d5a3b','#f2c7a0'],PH=['#3b2a20','#6b4a3a','#c9b27c','#9a9a9a','#c65a2e','#1e1e24'],PG=['#8ec9e8','#9fd8c5','#c7b8ea','#f4c4d4','#f7e0a1'],PB=['#e57373','#64b5f6','#81c784','#ffd54f'];
+function pat(t,i){const d=t=='dead',sk=d?'#d7dcdc':PS[(i*3)%5],hr=d?'#8a9598':PH[(i*5+2)%6],gw=d?'#b7c3c6':PG[(i*2)%5],st=i%4,ac=(i*7+1)%3;
+ const back=st==2?`<path d="M11 22c0-10 5-15 13-15s13 5 13 15v17h-6V24H17v15h-6z" fill="${hr}"/>`:'';
+ const front=st==1?'':st==3?`<path d="M12 19c0-8 5-12 12-12s12 4 12 12z" fill="${d?'#9aa7aa':PB[i%4]}"/><circle cx="24" cy="6.5" r="2.4" fill="#fff"/>`:`<path d="M12 20c0-8 5-11 12-11s12 3 12 11c-3-4-7-5-12-5s-9 1-12 5z" fill="${hr}"/>`;
+ const acc=ac==1?'<circle cx="19.5" cy="22" r="4" fill="none" stroke="#3b3b4a" stroke-width="1.2"/><circle cx="28.5" cy="22" r="4" fill="none" stroke="#3b3b4a" stroke-width="1.2"/><path d="M23.5 22h1" stroke="#3b3b4a" stroke-width="1.2"/>':ac==2?'<rect x="25" y="26" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#c9b9a8" stroke-width=".8" transform="rotate(-20 29 28)"/>':'';
+ const face=d?'<path d="M17.5 19.5l4 4M21.5 19.5l-4 4M26.5 19.5l4 4M30.5 19.5l-4 4M20 29h8" stroke="#14302d" stroke-width="1.6" stroke-linecap="round"/>':'<circle cx="19.5" cy="22" r="1.4" fill="#14302d"/><circle cx="28.5" cy="22" r="1.4" fill="#14302d"/><path d="M19 27q5 4 10 0" stroke="#14302d" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="15.5" cy="26" r="2" fill="#f4a3a3" opacity=".7"/><circle cx="32.5" cy="26" r="2" fill="#f4a3a3" opacity=".7"/>';
+ return`<svg viewBox="0 0 48 48" width="30" height="30">${back}<path d="M6 48c0-11 8-15 18-15s18 4 18 15z" fill="${gw}"/><circle cx="24" cy="21" r="12" fill="${sk}"/>${front}${face}${acc}</svg>`}
+function figs(t,n){if(!n)return'<span class="em">Aucun pour l’instant</span>';const a=Math.max(0,n-6);let h=a?`<span class="mo">+${a}</span>`:'';for(let i=a;i<n;i++)h+=`<span class="fgi${i==n-1&&S.nf==t?' pop':''}">${pat(t,i)}</span>`;return h}
+function upHd(){const nx=HEAL_PTS*(D.heal+1),left=ERR_X-D.err%ERR_X;
+ document.getElementById('hd').innerHTML=`<div class="hc"><div class="av">${nurse(S.mood)}</div><div class="cn"><div><div class="lb">Patients guéris<small>prochain à ${nx} pts</small></div><div class="fg">${figs('ok',D.heal)}</div></div><div><div class="lb">Patients décédés<small>encore ${left} erreur${left>1?'s':''}</small></div><div class="fg">${figs('dead',D.dead)}</div></div></div></div>`;S.nf=null}
+function home(){S.view='home';upHd();const d=dv();
+ app.innerHTML=`<h1>Calcul de doses</h1><div class="pts"><span>⭐ <b>${D.pts}</b> pts</span><span>Aujourd’hui : ${d.s}/5 séries</span><button class="tl" id="st" style="color:var(--ac);font-weight:700">📊 Stats</button></div>
+ <p class="sub">Choisis un niveau, puis un thème : 10 calculs tirés au hasard.</p>
+ <div class="seg">${LV.map((l,i)=>`<button class="${S.lvl==i+1?'on':''}" data-l="${i+1}">${l}</button>`).join('')}</div>
+ ${TH.map(t=>{const b=D.best[t.id+S.lvl];return`<button class="th" data-t="${t.id}"><span class="ic">${t.i}</span><span><b>${t.n}</b><small>${t.d}</small></span>${b!=null?`<span class="bs">${b}/${N}</span>`:''}</button>`}).join('')}`;
+ document.getElementById('st').onclick=stats;chkUI();
+ app.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{S.lvl=+b.dataset.l;home()});
+ app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>start(b.dataset.t));
+}
+function stats(){S.view='stats';upHd();const d=dv(),got=D.dr.includes(today());
+ const days=Object.keys(D.days).filter(k=>D.days[k].n>0).sort().slice(-7).reverse();
+ app.innerHTML=`<div class="top"><button class="tl" id="m">← Menu</button><span></span><span>⭐ ${D.pts} pts</span></div><h1>Statistiques</h1>
+ <h3>Aujourd’hui</h3><div class="st"><b>${d.s}/5 séries</b> · ${d.ok}/${d.n} bonnes réponses (${pc(d.ok,d.n)})<div class="mb"><i style="width:${Math.min(d.s,5)*20}%"></i></div><div class="sub" style="margin:6px 0 0">${got?'🔥 Récompense du jour obtenue !':'Objectif : 5 séries avec au moins 90 % de réussite sur la journée.'}</div></div>
+ <h3>Par catégorie</h3>${TH.filter(t=>t.id!='mixte').map(t=>{const s=D.th[t.id]||{n:0,ok:0};return`<div class="st">${t.i} <b>${t.n}</b><br>${s.ok}/${s.n} bonnes réponses · <b>${pc(s.ok,s.n)}</b><div class="mb"><i style="width:${s.n?s.ok/s.n*100:0}%"></i></div></div>`}).join('')}
+ <h3>Récompenses</h3>${REW.map(([p,i,n])=>`<div class="st rw ${D.earned.includes(p)?'on':''}">${i} <b>${n}</b> <span class="sub">${p} pts</span></div>`).join('')}
+ <div class="st rw ${D.dr.length?'on':''}">🔥 <b>Journée parfaite</b> <span class="sub">× ${D.dr.length} · +50 pts à chaque fois</span></div>
+ <h3>Derniers jours</h3>${days.map(k=>{const x=D.days[k];return`<div class="st">${new Date(k+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})} : ${x.s} séries · <b>${pc(x.ok,x.n)}</b> de réussite</div>`}).join('')||'<p class="sub">Aucune série pour l’instant.</p>'}`;
+ document.getElementById('m').onclick=home;
+}
+function start(id){S.mood='ok';S.th=id;S.qs=Array.from({length:N},()=>gen(id,S.lvl));S.i=0;S.sc=0;S.gain=0;S.errs=[];S.st='q';quiz()}
+function quiz(){S.view='quiz';S.val='';S.st='q';
+ const q=S.qs[S.i],t=TH.find(x=>x.id==S.th);
+ app.innerHTML=`<div class="top"><button class="tl" id="m">← Menu</button><span>${t.n} · ${LV[S.lvl-1]}</span><span>${S.i+1}/${N}</span></div>
+ <div class="bar"><i style="width:${S.i/N*100}%"></i></div>
+ <div class="q">${q.q}</div>
+ <div class="row"><div class="ans" id="a"></div><span class="u">${q.unit}</span></div>
+ <div id="res"></div>
+ <div class="pad">${['7','8','9','4','5','6','1','2','3',',','0','⌫'].map(k=>`<button data-k="${k}">${k}</button>`).join('')}</div>
+ <button class="btn" id="go">Valider</button>`;
+ document.getElementById('m').onclick=home;
+ document.getElementById('go').onclick=act;
+ app.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>key(b.dataset.k));
+ show();
+}
+const show=()=>{const a=document.getElementById('a');if(a)a.textContent=S.val||'\u00a0'};
+function key(k){if(S.view!='quiz'||S.st!='q')return;
+ if(k=='⌫')S.val=S.val.slice(0,-1);
+ else if(k==','){if(!S.val.includes(','))S.val+=S.val?',':'0,'}
+ else if(S.val.length<9)S.val+=k;
+ show()}
+function act(){S.st=='q'?check():next()}
+function check(){
+ if(!S.val||S.val=='0,')return;
+ const v=parseFloat(S.val.replace(',','.')),q=S.qs[S.i],L=S.lvl;
+ const tol=Math.max(0.5*Math.pow(10,-q.dec),0.01*q.ans),ok=Math.abs(v-q.ans)<=tol;
+ const delta=ok?10*L:-5*L,b=D.pts;D.pts=Math.max(0,D.pts+delta);S.gain+=D.pts-b;
+ const s=D.th[q.cat]||(D.th[q.cat]={n:0,ok:0});s.n++;const d=day();d.n++;
+ if(ok){S.sc++;s.ok++;d.ok++}else S.errs.push({q:q.q,v:f(v)+' '+q.unit,a:f(q.ans)+' '+q.unit});
+ let ev2='';S.mood=ok?'ok':'bad';
+ if(!ok){D.err++;if(D.err%ERR_X==0){D.dead++;S.nf='dead';ev2+=`<div class="ev">🕊️ Un patient est décédé après ${ERR_X} erreurs de dose.</div>`}}
+ let hh=0;while(D.pts>=(D.heal+1)*HEAL_PTS){D.heal++;hh++}
+ if(hh)S.nf='ok';if(hh)ev2+=`<div class="ev">🎉 Un patient est guéri et rentre chez lui !</div>`;
+ save();S.st='n';
+ document.getElementById('res').innerHTML=`<div class="fb ${ok?'ok':'ko'}"><b>${ok?'Bonne réponse ! +'+10*L:'Attendu : '+f(q.ans)+' '+q.unit+' · −'+5*L} pts</b><ul>${q.steps.map(x=>`<li>${x}</li>`).join('')}</ul></div>${ev2}`;
+ upHd();document.getElementById('go').textContent=S.i==N-1?'Voir mon score':'Question suivante';
+}
+function next(){S.i++;S.i<N?quiz():end()}
+function end(){S.view='end';upHd();
+ const k=S.th+S.lvl;if(D.best[k]==null||S.sc>D.best[k])D.best[k]=S.sc;
+ const d=day();d.s++;const nr=[];
+ if(d.s>=5&&d.ok/d.n>=.9&&!D.dr.includes(today())){D.dr.push(today());D.pts+=50;nr.push('🔥 Journée parfaite : +50 pts')}
+ REW.forEach(([p,i,n])=>{if(D.pts>=p&&!D.earned.includes(p)){D.earned.push(p);nr.push(`${i} ${n}`)}});
+ save();
+ const msg=S.sc==N?'Sans faute !':S.sc>=8?'Très bien !':S.sc>=5?'Continue, ça vient.':'Refais une série pour t’entraîner.';
+ app.innerHTML=`<h1>Série terminée</h1><div class="big">${S.sc}/${N}</div><p class="sub" style="text-align:center">${msg}<br>Série : <b>${S.gain>=0?'+':''}${S.gain} pts</b> · Total : <b>${D.pts} pts</b> · Aujourd’hui ${d.s}/5 séries (${pc(d.ok,d.n)})</p>
+ ${nr.map(x=>`<div class="fb ok"><b>Récompense débloquée : ${x}</b></div>`).join('')}
+ ${S.errs.length?`<h3>À revoir</h3>${S.errs.map(e=>`<div class="er">${e.q}<br><span>Ta réponse : ${e.v}</span> · Attendu : <b>${e.a}</b></div>`).join('')}`:''}
+ <button class="btn" id="re">Nouvelle série</button><button class="btn g" id="mn">Changer de thème</button><button class="btn g" id="sx">📊 Statistiques</button>`;
+ document.getElementById('re').onclick=()=>start(S.th);document.getElementById('mn').onclick=home;document.getElementById('sx').onclick=stats;
+}
+document.addEventListener('keydown',e=>{
+ if(S.view!='quiz'||document.getElementById('cp').classList.contains('on'))return;
+ if(e.key=='Enter'){e.preventDefault();act()}
+ else if(/^\d$/.test(e.key))key(e.key);
+ else if(e.key==','||e.key=='.')key(',');
+ else if(e.key=='Backspace')key('⌫');
+});
+/* Calculatrice */
+function ev(s){let p=0;const t=s.replace(/\s/g,'');
+ const num=()=>{if(t[p]=='('){p++;const v=ex();if(t[p]!=')')throw 0;p++;return v}const m=/^(\d+\.?\d*|\.\d+)/.exec(t.slice(p));if(!m)throw 0;p+=m[0].length;return parseFloat(m[0])};
+ const un=()=>{if(t[p]=='-'){p++;return -un()}return num()};
+ const tm=()=>{let v=un();while(t[p]=='*'||t[p]=='/'){const o=t[p++],w=un();v=o=='*'?v*w:v/w}return v};
+ const ex=()=>{let v=tm();while(t[p]=='+'||t[p]=='-'){const o=t[p++],w=tm();v=o=='+'?v+w:v-w}return v};
+ const v=ex();if(p<t.length)throw 0;return v}
+let ce='',cr=false;const cd=document.getElementById('cd');
+function ckey(k){
+ if(k=='C')ce='';else if(k=='⌫')ce=ce=='Erreur'?'':ce.slice(0,-1);
+ else if(k=='='){try{const v=ev(ce.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-').replace(/,/g,'.'));if(!isFinite(v))throw 0;ce=(+v.toFixed(6)).toString().replace('.',',');cr=true}catch(e){ce='Erreur'}}
+ else{if(ce=='Erreur'||(cr&&/[\d,(]/.test(k)))ce='';cr=false;ce+=k}
+ cd.textContent=ce||'0'}
+document.getElementById('ck').innerHTML=['C','⌫','÷','×','7','8','9','−','4','5','6','+','1','2','3','=','0',',','(',')'].map(k=>`<button data-c="${k}" class="${/[C⌫÷×−+=]/.test(k)?'op':''}">${k}</button>`).join('');
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>ckey(b.dataset.c));
+document.getElementById('cb').onclick=()=>document.getElementById('cp').classList.toggle('on');
+/* Mise à jour (service worker) */
+let REG=null;const upBtn=document.getElementById('up');
+function showUp(w){upBtn.hidden=false;upBtn.onclick=()=>{upBtn.textContent='Mise à jour…';w.postMessage('SKIP_WAITING')}}
+function chkUI(){app.insertAdjacentHTML('beforeend','<div style="text-align:center;margin-top:18px"><button class="tl" id="cu">🔄 Vérifier les mises à jour</button><div class="sub" id="cus" style="margin:6px 0 0;font-size:.85rem"></div></div>');
+ document.getElementById('cu').onclick=async()=>{const m=document.getElementById('cus');if(!REG){m.textContent='Disponible uniquement sur la version hébergée.';return}m.textContent='Recherche…';
+  try{await REG.update();setTimeout(()=>{m.textContent=REG.waiting?'Nouvelle version prête : appuie sur le bouton en haut.':'Tu as déjà la dernière version.'},800)}catch(e){m.textContent='Impossible de vérifier (hors ligne ?).'}}}
+if('serviceWorker' in navigator){
+ const had=!!navigator.serviceWorker.controller;let rl=false;
+ navigator.serviceWorker.register('./sw.js').then(reg=>{REG=reg;
+  if(reg.waiting&&navigator.serviceWorker.controller)showUp(reg.waiting);
+  reg.addEventListener('updatefound',()=>{const n=reg.installing;n.addEventListener('statechange',()=>{if(n.state==='installed'&&navigator.serviceWorker.controller)showUp(n)})});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})});
+ }).catch(()=>{});
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||rl)return;rl=true;location.reload()});
+}
+home();
+</script>
+</body>
+</html>
